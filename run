@@ -52,14 +52,27 @@ pretty_compilation_errors() {
     # fi
 }
 
+# Compilation parsing
+compilation_error_count() {
+    echo "$1" | egrep -o "[0-9]+ error$" | sed "s/[^0-9]//g"
+}
+
 # Compilation json
 compilation_error_in_submission() {
-    compile_err=$(pretty_compilation_errors $1)
+    compile_err=$(cat $1)
+    compile_err_count=$(compilation_error_count "$compile_err")
+
+    if [[ "$compile_err_count" -eq "1" ]]; then
+        compile_err_word="fout"
+    else
+        compile_err_word="fouten"
+    fi
+
 
     jshon -Q -n object                                             \
         -n false -i 'accepted'                                     \
         -s 'compilation error' -i 'status'                         \
-        -s "in jouw code" -i 'description'                         \
+        -s "$compile_err_count $compile_err_word" -i 'description' \
         -n array                                                   \
             -n object                                              \
                 -s 'Compiler' -i 'description'                     \
