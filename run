@@ -34,14 +34,18 @@ memory_limit="$(( memory_limit * 9 / 10000 ))"
 start_time="$(date +"%s")"
 
 # User friendly compilation errors
-pretty_compilation_error() {
+pretty_compilation_errors() {
     compile_err=$(cat $1)
+
+    # Get the amount of compilation errors.
+    amount_of_errors=$(echo $compile_err | egrep -o "[0-9]+ errors$" | sed "s/[^0-9]//g")
+    echo -e "$amount_of_errors fouten traden op tijdens het compileren van je ingediende oplossing.\n"
 
     # Test the name of the class.
     wrong_class=$(echo $compile_err | grep -c "should be declared in a file named")
     if [ "$wrong_class" -eq "1" ]; then
-        correct_class_name=$(echo $compile_err | grep -o "^\w*.java" | sed "s/.java//g")
-        student_class_name=$(echo $compile_err | grep -o "public class \w*" | sed "s/public class //g")
+        correct_class_name=$(echo $compile_err | egrep -o "^\w+.java" | sed "s/.java//g")
+        student_class_name=$(echo $compile_err | egrep -o "public class \w+" | sed "s/public class //g")
         echo "De ingediende klasse heeft een foute naam. De klasse hoort als naam \"$correct_class_name\" te hebben, jouw klasse heeft als naam \"$student_class_name\"."
     else
         echo "$compile_err"
@@ -50,7 +54,7 @@ pretty_compilation_error() {
 
 # Compilation json
 compilation_error() {
-    compile_err=$(pretty_compilation_error $2)
+    compile_err=$(pretty_compilation_errors $2)
 
     jshon -Q -n object                                             \
         -n false -i 'accepted'                                     \
