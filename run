@@ -39,7 +39,7 @@ pretty_compilation_error() {
 
     # Test the name of the class.
     wrong_class=$(echo $compile_err | grep -c "should be declared in a file named")
-    if [ "$wrong_class" -eq "1" ];
+    if [ "$wrong_class" -eq "1" ]; then
         correct_class_name=$(echo $compile_err | grep -o "^\w*.java" | sed "s/.java//g")
         student_class_name=$(echo $compile_err | grep -o "public class \w*" | sed "s/public class //g")
         echo "De ingediende klasse heeft een foute naam. De klasse hoort als naam \"$correct_class_name\" te hebben, jouw klasse heeft als naam \"$student_class_name\"."
