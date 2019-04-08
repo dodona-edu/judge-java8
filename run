@@ -131,6 +131,7 @@ compilation_error_in_tests() {
                         -n array                                   \
                             -n object                              \
                                 -s 'code' -i 'format'              \
+                                -s 'staff' -i 'permission'         \
                                 -s "$compile_err" -i 'description' \
                             -i 0                                   \
                             -n object                              \
