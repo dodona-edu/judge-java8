@@ -51,7 +51,21 @@ explain_compilation_error() {
     fi
 }
 
-parse_compilation_error() {
+parse_compilation_error_staff() {
+    # arg1: 1 compiler log
+
+    dodona_start_context
+
+    # Print the compilation message.
+    dodona_start_testcase_code_message_staff "$1"
+
+    dodona_close_failed_testcase
+    dodona_close_failed_context
+}
+
+parse_compilation_error_student() {
+    # arg1: 1 compiler log
+
     dodona_start_context
 
     # Print the compilation message.
@@ -85,7 +99,8 @@ parse_compilation_error() {
 }
 
 parse_compilation_errors() {
-    # arg1 raw compilation output
+    # arg1: permission
+    # arg2: raw compilation output
 
     # Processes the compilation errors, store them in an array, after which the
     # invidual errors/warnings are processed.
@@ -101,7 +116,7 @@ parse_compilation_errors() {
 
         compile_errs+=("$compile_err")
         compile_err="$line\n"
-    done <<< "$1"
+    done <<< "$2"
 
     # Last error/warning will end with "x errors/y warnings; remove this part."
     compile_err=$(echo "$compile_err" | sed "s/[0-9]\+ warnings\?//g")
@@ -111,7 +126,11 @@ parse_compilation_errors() {
     # The errors and warnings could not be processed in the previous while
     # loop due to problems with jshon/stdin and read.
     for i in "${compile_errs[@]}"; do
-        parse_compilation_error "$i"
+        if [[ "$1" == 'student' ]]; then
+            parse_compilation_error_student "$i"
+        else
+            parse_compilation_error_staff "$i"
+        fi
     done
 }
 
@@ -131,7 +150,7 @@ compilation_error_in_submission() {
     dodona_start_tab "Compiler"
     dodona_append_plain_message "Je code kon niet worden gecompileerd en bijgevolg niet worden uitgevoerd. De compiler rapporteerde $compile_err_count $compile_err_noun en $compile_warn_count $compile_warn_noun."
 
-    parse_compilation_errors "$compile_log"
+    parse_compilation_errors 'student' "$compile_log"
 
     dodona_close_tab $compile_errwarn_sum
     dodona_close_judgement_compilation_error "$compile_err_count $compile_err_noun"
@@ -140,24 +159,14 @@ compilation_error_in_submission() {
 compilation_error_in_tests() {
     compile_log=$(cat $1)
 
-    # Parse the amount of compilation errors and warnings.
-    compile_err_count=$(compilation_error_count "$compile_log")
-    compile_warn_count=$(compilation_warning_count "$compile_log")
-    compile_errwarn_sum="$((compile_err_count + compile_warn_count))"
+    dodona_start_judgement
+    dodona_start_tab "Compiler"
+    dodona_append_plain_message "Er ging iets mis tijdens het compileren van de testen voor deze oefening. Contacteer je lesgever."
 
-    # Get the correct noun.
-    [[ "$compile_err_count" == "1" ]] && compile_err_noun="fout" || compile_err_noun="fouten"
-    [[ "$compile_warn_count" == "1" ]] && compile_warn_noun="waarschuwing" || compile_warn_noun="waarschuwingen"
+    parse_compilation_errors 'staff' "$compile_log"
 
-    # dodona_start_judgement
-    # dodona_start_tab "Compiler"
-    # dodona_append_plain_message "Je code kon niet worden gecompileerd en bijgevolg niet worden uitgevoerd. \
-    # De compiler rapporteerde $compile_err_count $compile_err_noun en $compile_warn_count $compile_warn_noun."
-
-    parse_compilation_errors "$compile_log"
-
-    # dodona_close_tab $compile_errwarn_sum
-    # dodona_close_judgement_compilation_error 'a'
+    dodona_close_tab
+    dodona_close_judgement_compilation_error "in de testen"
 }
 
 
