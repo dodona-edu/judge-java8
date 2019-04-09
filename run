@@ -44,7 +44,19 @@ compilation_warning_count() {
 
 parse_compilation_error() {
     dodona_start_context
+
+    # Print the compilation message.
     dodona_start_testcase_code_message "$1"
+
+    # Get the code annotation information and annotate the code.
+    annotation_row=$(echo "$1" | sed "s/^$filename:\([0-9]\+\):.*/\1/g")
+    annotation_row=$((annotation_row - 1))
+    annotation_column=$(echo "$1" | grep -o "\s*\^" | wc -c)
+    annotation_column=$((annotation_column - 2))
+    annotation_text="dummy"
+
+    dodona_annotate_code "$annotation_row" "$annotation_column" "$annotation_text"
+
     dodona_close_failed_testcase
     dodona_close_failed_context
 }

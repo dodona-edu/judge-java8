@@ -2,6 +2,18 @@
 
 ###################### [ Partial output helper functions ] #####################
 
+### [ Annotations ]
+dodona_annotate_code() {
+    # arg1: row
+    # arg2: column
+    # arg3: annotation text
+    jshon -Q -n object                \
+        -s 'annotate-code' -i command \
+        -n "$2" -i 'column'           \
+        -n "$1" -i 'row'              \
+        -s "$3" -i 'text'
+}
+
 ### [ Contexts ]
 dodona_close_failed_context() {
     jshon -Q -n object                  \
