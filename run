@@ -94,18 +94,18 @@ compilation_error_in_submission() {
                 -n array                                                  \
                     -n object                                             \
                         -n false -i 'accepted'                            \
+                        -n object                                         \
+                            -s 'plain' -i 'format'                        \
+                            -s "$compile_msg" -i 'description'            \
+                        -i 'description'                                  \
                         -n array                                          \
                             -n object                                     \
                                 -s 'code' -i 'format'                     \
-                                -s "$compile_err" -i 'description'        \ahar
+                                -s "$compile_err" -i 'description'        \
                             -i 0                                          \
                             -n object                                     \
                                 -s 'code' -i 'format'                     \
                                 -s "$compile_err_pretty" -i 'description' \
-                            -i 0                                          \
-                            -n object                                     \
-                                -s 'plain' -i 'format'                    \
-                                -s "$compile_msg" -i 'description'        \
                             -i 0                                          \
                         -i 'messages'                                     \
                     -i 0                                                  \
