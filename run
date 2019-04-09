@@ -43,7 +43,12 @@ compilation_warning_count() {
 }
 
 explain_compilation_error() {
-    echo ""
+    if [[ $(echo "$1" | grep -c "should be declared in a file named" || true) == "1" ]]; then
+        expected_class_name=$(echo $filename | sed "s/.java//")
+        echo "De naam van je klasse hoort \"$expected_class_name\" te zijn."
+    elif [[ $(echo "$1" | grep -c "found raw type" || true) == "1" ]]; then
+        echo "Het is aangeraden een type mee te geven aan generieke klassen."
+    fi
 }
 
 parse_compilation_error() {
@@ -54,7 +59,7 @@ parse_compilation_error() {
 
     # Try to explain this compilation message, add it to the testcase if found.
     explanation=$(explain_compilation_error "$1")
-    [[ "$explanation" == "" ]] || dodona_append_plain_message "$explanation"
+    [[ "$explanation" == "" ]] || dodona_append_html_message "<em>Uitleg:</em> $explanation"
 
     # Get the code annotation information and annotate the code.
     annotation_column=$(echo "$1" | grep -o "\s*\^" | wc -c)
