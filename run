@@ -68,7 +68,9 @@ parse_compilation_errors() {
         compile_err="$line\n"
     done <<< "$1"
 
-    compile_err=$(echo "$compile_err")
+    # Last error/warning will end with "x errors/y warnings; remove this part."
+    compile_err=$(echo "$compile_err" | sed "s/[0-9]\+ warnings\?//g")
+    compile_err=$(echo "$compile_err" | sed "s/[0-9]\+ errors\?//g")
     compile_errs+=("$compile_err")
 
     # The errors and warnings could not be processed in the previous while
