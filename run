@@ -97,7 +97,7 @@ compilation_error_in_submission() {
                         -n array                                          \
                             -n object                                     \
                                 -s 'code' -i 'format'                     \
-                                -s "$compile_err" -i 'description'        \
+                                -s "$compile_err" -i 'description'        \ahar
                             -i 0                                          \
                             -n object                                     \
                                 -s 'code' -i 'format'                     \
@@ -116,27 +116,27 @@ compilation_error_in_submission() {
 
 compilation_error_in_tests() {
     compile_err=$(cat $1)
-    description="De tests van deze opgave bevatten een fout, contacteer de lesgever."
+    description="De testen van deze opgave bevatten een fout, contacteer de lesgever."
 
     jshon -Q -n object                                             \
         -n false -i 'accepted'                                     \
         -s 'compilation error' -i 'status'                         \
-        -s "in tests" -i 'description'                             \
+        -s "in testen" -i 'description'                            \
         -n array                                                   \
             -n object                                              \
                 -s 'Compiler' -i 'description'                     \
                 -n array                                           \
                     -n object                                      \
                         -n false -i 'accepted'                     \
+                        -n object                                  \
+                            -s 'plain' -i 'format'                 \
+                            -s "$description" -i 'description'     \
+                        -i 'description'                           \
                         -n array                                   \
                             -n object                              \
                                 -s 'code' -i 'format'              \
                                 -s 'staff' -i 'permission'         \
                                 -s "$compile_err" -i 'description' \
-                            -i 0                                   \
-                            -n object                              \
-                                -s 'plain' -i 'format'             \
-                                -s "$description" -i 'description' \
                             -i 0                                   \
                         -i 'messages'                              \
                     -i 0                                           \
