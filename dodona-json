@@ -97,13 +97,13 @@ dodona_close_testcase() {
 
 dodona_start_testcase_code_message() {
     # arg1: description
-    description=$(echo "$1" | sed "s/\\n/\n/g")
+    description=$(echo -e "$1")
 
-    jshon -Q -n object                   \
-        -s 'start-testcase' -i 'command' \
-        -n object                        \
-            -s 'code' -i 'format'       \
-            -s 'student' -i 'permission'           \
-            -s "$description" -i 'description'     \
+    jshon -Q -n object                         \
+        -s 'start-testcase' -i 'command'       \
+        -n object                              \
+            -s 'code' -i 'format'              \
+            -s 'student' -i 'permission'       \
+            -s "$description" -i 'description' \
         -i 'description'
 }
