@@ -52,19 +52,24 @@ parse_compilation_error() {
 parse_compilation_errors() {
     # arg1 raw compilation output
 
-    # Processes the compilation error, line by line until a carret is matched,
-    # after which the invidual errors/warnings are processed.
+    # Processes the compilation errors, store them in an array, after which the
+    # invidual errors/warnings are processed.
     compile_errs=()
-    while read -r line; do
-        [[ $compile_err == "" ]] && compile_err="$line" || compile_err+="\n$line"
+    compile_err=""
+    while IFS="\n" read -r line; do
+        new_case=$(echo "$line" | egrep -c "^$filename:[0-9]+:" || true)
 
-        end_of_err=$(echo "$line" | egrep -c "^\s*\^$" || true)
-
-        [[ $end_of_err == "1" ]] || continue
+        if [[ "$new_case" == "0" || $compile_err == "" ]]; then
+            compile_err+="$line\n"
+            continue
+        fi
 
         compile_errs+=("$compile_err")
-        compile_err=""
+        compile_err="$line\n"
     done <<< "$1"
+
+    compile_err=$(echo "$compile_err")
+    compile_errs+=("$compile_err")
 
     # The errors and warnings could not be processed in the previous while
     # loop due to problems with jshon/stdin and read.
@@ -87,8 +92,7 @@ compilation_error_in_submission() {
 
     dodona_start_judgement
     dodona_start_tab "Compiler"
-    dodona_append_plain_message "Je code kon niet worden gecompileerd en bijgevolg niet worden uitgevoerd. \
-    De compiler rapporteerde $compile_err_count $compile_err_noun en $compile_warn_count $compile_warn_noun."
+    dodona_append_plain_message "Je code kon niet worden gecompileerd en bijgevolg niet worden uitgevoerd. De compiler rapporteerde $compile_err_count $compile_err_noun en $compile_warn_count $compile_warn_noun."
 
     parse_compilation_errors "$compile_log"
 
@@ -108,15 +112,15 @@ compilation_error_in_tests() {
     [[ "$compile_err_count" == "1" ]] && compile_err_noun="fout" || compile_err_noun="fouten"
     [[ "$compile_warn_count" == "1" ]] && compile_warn_noun="waarschuwing" || compile_warn_noun="waarschuwingen"
 
-    dodona_start_judgement
-    dodona_start_tab "Compiler"
-    dodona_append_plain_message "Je code kon niet worden gecompileerd en bijgevolg niet worden uitgevoerd. \
-    De compiler rapporteerde $compile_err_count $compile_err_noun en $compile_warn_count $compile_warn_noun."
+    # dodona_start_judgement
+    # dodona_start_tab "Compiler"
+    # dodona_append_plain_message "Je code kon niet worden gecompileerd en bijgevolg niet worden uitgevoerd. \
+    # De compiler rapporteerde $compile_err_count $compile_err_noun en $compile_warn_count $compile_warn_noun."
 
     parse_compilation_errors "$compile_log"
 
-    dodona_close_tab $compile_errwarn_sum
-    dodona_close_judgement_compilation_error 'a'
+    # dodona_close_tab $compile_errwarn_sum
+    # dodona_close_judgement_compilation_error 'a'
 }
 
 
