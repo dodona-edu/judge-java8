@@ -110,7 +110,8 @@ parse_compilation_error_student() {
     if [[ "$explanation" == "" ]]; then
         annotation_text=$(echo -e "$1" | sed "s/.*: error://" | sed "s/.*: warning://" | head -n 1)
     else
-        annotation_text="$explanation"
+        # Strip the ` from markdown explanations.
+        annotation_text=$(echo "$explanation" | tr -d '\`')
     fi
 
     # Annotate the code accordingly.
