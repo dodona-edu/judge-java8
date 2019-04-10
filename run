@@ -56,7 +56,8 @@ explain_compilation_error() {
         variable_name=$(echo "$1" | grep -o "final variable \S\+" | sed "s/final variable //" | sed "s/\\\n//")
         echo "Variabelen die als \`final\` zijn gedeclareerd, kunnen niet meer worden aangepast eens ze een waarde hebben. Verwijder het \`final\` keyword bij de variabele \"$variable_name\" om dit op te lossen."
     else
-        echo "$1"
+        # Empty explanation.
+        echo ""
     fi
 }
 
