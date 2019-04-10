@@ -3,20 +3,6 @@
 ###################### [ Partial output helper functions ] #####################
 
 ### [ Annotations ]
-dodona_annotate_code_error() {
-    # arg1: row
-    # arg2: column
-    # arg3: annotation text
-    dodona_annotate_code 'error' "$1" "$2" "$3"
-}
-
-dodona_annotate_code_warning() {
-    # arg1: row
-    # arg2: column
-    # arg3: annotation text
-    dodona_annotate_code 'warning' "$1" "$2" "$3"
-}
-
 dodona_annotate_code() {
     # arg1: type
     # arg2: row
@@ -111,7 +97,7 @@ dodona_append_message() {
 ### [ Tabs ]
 dodona_close_tab() {
     # arg1: badge count (optional: default 0)
-    [[ "$1" == "" ]] && badge_count=0 || badge_count="$1"
+    badge_count="${1:-0}"
 
     jshon -Q -n object                    \
         -s 'close-tab' -i 'command'       \
