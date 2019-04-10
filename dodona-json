@@ -67,6 +67,12 @@ dodona_start_judgement() {
 }
 
 ### [ Messages ]
+dodona_append_code_message_staff() {
+    # arg1: message contents
+    code=$(echo -e "$1")
+    dodona_append_message 'code' 'staff' "$code"
+}
+
 dodona_append_code_message() {
     # arg1: message contents
     code=$(echo -e "$1")
@@ -137,19 +143,6 @@ dodona_close_failed_testcase() {
 
 dodona_close_testcase() {
     jshon -Q -n object -s 'close-testcase' -i 'command'
-}
-
-dodona_start_testcase_code_message_staff() {
-    # arg1: description
-    description=$(echo -e "$1")
-
-    jshon -Q -n object                         \
-        -s 'start-testcase' -i 'command'       \
-        -n object                              \
-            -s 'code' -i 'format'              \
-            -s 'staff' -i 'permission'         \
-            -s "$description" -i 'description' \
-        -i 'description'
 }
 
 dodona_start_testcase_code_message() {

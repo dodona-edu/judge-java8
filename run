@@ -71,8 +71,11 @@ parse_compilation_error_staff() {
 
     dodona_start_context
 
-    # Print the compilation message.
-    dodona_start_testcase_code_message_staff "$1"
+    # Start the case.
+    dodona_start_testcase_markdown_message "Compilatiefout"
+
+    # Append the compilation log, only visible for staff.
+    dodona_append_code_message_staff "$1"
 
     dodona_close_failed_testcase
     dodona_close_failed_context
@@ -221,7 +224,7 @@ debug compiled judge
 
 # Compiling the workdir given code
 if ! find . -name '*.java' | xargs --no-run-if-empty javac -cp ".:${worklibs}:${testlibs}" -d . -sourcepath . > "$compilation" 2>&1; then
-    compilation_error_in_submission <(sed 's_.*/\([^/]*.java\)_\1_' "$compilation")
+    compilation_error_in_tests <(sed 's_.*/\([^/]*.java\)_\1_' "$compilation")
     exit 0
 fi
 
