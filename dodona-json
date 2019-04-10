@@ -67,9 +67,20 @@ dodona_start_judgement() {
 }
 
 ### [ Messages ]
+dodona_append_code_message() {
+    # arg1: message contents
+    code=$(echo -e "$1")
+    dodona_append_message 'code' 'student' "$code"
+}
+
 dodona_append_html_message() {
     # arg1: message contents
     dodona_append_message 'html' 'student' "$1"
+}
+
+dodona_append_markdown_message() {
+    # arg1: message contents
+    dodona_append_message 'markdown' 'student' "$1"
 }
 
 dodona_append_plain_message() {
@@ -149,6 +160,19 @@ dodona_start_testcase_code_message() {
         -s 'start-testcase' -i 'command'       \
         -n object                              \
             -s 'code' -i 'format'              \
+            -s 'student' -i 'permission'       \
+            -s "$description" -i 'description' \
+        -i 'description'
+}
+
+dodona_start_testcase_markdown_message() {
+    # arg1: description
+    description=$(echo "$1")
+
+    jshon -Q -n object                         \
+        -s 'start-testcase' -i 'command'       \
+        -n object                              \
+            -s 'markdown' -i 'format'          \
             -s 'student' -i 'permission'       \
             -s "$description" -i 'description' \
         -i 'description'
