@@ -36,7 +36,6 @@ source $judge/dodona-json
 
 compilation_error_count() {
     echo "$1" | sed -n 's/^\([0-9]\+\) errors\?$/\1/p'
-    # echo "$1" | egrep -o "[0-9]+ errors?$" | sed "s/[^0-9]//g" || echo "0"
 }
 
 compilation_warning_count() {
@@ -131,9 +130,7 @@ parse_compilation_errors() {
     # arg1: permission
     # arg2: raw compilation output
 
-    # Processes the compilation errors, store them in an array, after which the
-    # invidual errors/warnings are processed.
-    compile_errs=()
+    # Loop over the compile log and process each message individually.
     compile_err=""
     while IFS="\n" read -r line; do
         new_case=$(echo "$line" | egrep -c "^$filename:[0-9]+:" || true)
@@ -143,24 +140,25 @@ parse_compilation_errors() {
             continue
         fi
 
-        compile_errs+=("$compile_err")
+        if [[ "$1" == 'student' ]]; then
+            parse_compilation_error_student "$compile_err" </dev/zero
+        else
+            parse_compilation_error_staff "$compile_err" </dev/zero
+        fi
+
         compile_err="$line\n"
     done <<< "$2"
 
     # Last error/warning will end with "x errors/y warnings; remove this part."
     compile_err=$(echo "$compile_err" | sed "s/[0-9]\+ warnings\?//g")
     compile_err=$(echo "$compile_err" | sed "s/[0-9]\+ errors\?//g")
-    compile_errs+=("$compile_err")
 
-    # The errors and warnings could not be processed in the previous while
-    # loop due to problems with jshon/stdin and read.
-    for i in "${compile_errs[@]}"; do
-        if [[ "$1" == 'student' ]]; then
-            parse_compilation_error_student "$i"
-        else
-            parse_compilation_error_staff "$i"
-        fi
-    done
+    # Process the last error/warning.
+    if [[ "$1" == 'student' ]]; then
+        parse_compilation_error_student "$compile_err" </dev/zero
+    else
+        parse_compilation_error_staff "$compile_err" </dev/zero
+    fi
 }
 
 compilation_error_in_submission() {
@@ -192,11 +190,13 @@ compilation_error_in_submission() {
 }
 
 compilation_error_in_tests() {
+    compile_log=$(cat $1)
+
     dodona_start_judgement
     dodona_start_tab "Compiler"
     dodona_append_html_message "<div class=\"callout callout-info\">Er ging iets mis tijdens het compileren van de testen voor deze oefening. Contacteer je lesgever.</div>"
 
-    parse_compilation_errors 'staff' "$1"
+    parse_compilation_errors 'staff' "$compile_log"
 
     dodona_close_tab
     dodona_close_judgement_compilation_error "in de testen"
