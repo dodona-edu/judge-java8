@@ -131,19 +131,6 @@ dodona_close_testcase() {
     jshon -Q -n object -s 'close-testcase' -i 'command'
 }
 
-dodona_start_testcase_code_message() {
-    # arg1: description
-    description=$(echo -e "$1")
-
-    jshon -Q -n object                         \
-        -s 'start-testcase' -i 'command'       \
-        -n object                              \
-            -s 'code' -i 'format'              \
-            -s 'student' -i 'permission'       \
-            -s "$description" -i 'description' \
-        -i 'description'
-}
-
 dodona_start_testcase_markdown_message() {
     # arg1: description
     description=$(echo "$1")
