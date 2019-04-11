@@ -108,12 +108,12 @@ parse_compilation_error_student() {
     # Get the code annotation information.
     annotation_column=$(echo "$1" | grep -o "\s*\^" | wc -c)
     annotation_column=$((annotation_column - 2))
-    annotation_row=$(echo "$1" | sed "s/^$filename:\([0-9]\+\):.*/\1/g")
+    annotation_row=$(echo "$1" | grep -o "^$filename:[0-9]\+:" | sed "s/^$filename:\([0-9]\+\):/\1/")
     annotation_row=$((annotation_row - 1))
 
     if [[ -z "$explanation" ]]; then
         # Insert the first line of the compilation log.
-        annotation_text=$(echo -e "$1" | sed "s/.*: error://" | sed "s/.*: warning://" | head -n 1)
+        annotation_text=$(echo "$1" | sed "s/.*: error://" | sed "s/.*: warning://" | head -n 1)
     else
         # Strip the ` from markdown explanations.
         annotation_text=$(echo "$explanation" | tr -d '\`')
@@ -135,8 +135,11 @@ parse_compilation_errors() {
     while IFS="\n" read -r line; do
         new_case=$(echo "$line" | egrep -c "^$filename:[0-9]+:" || true)
 
-        if [[ "$new_case" == "0" || -z "$compile_err" ]]; then
-            compile_err+="$line\n"
+        if [[ -z "$compile_err" ]]; then
+            compile_err="$line"
+            continue
+        elif [[ "$new_case" == "0" ]]; then
+            compile_err="$(printf '%s\n%s' "$compile_err" "$line")"
             continue
         fi
 
@@ -146,7 +149,7 @@ parse_compilation_errors() {
             parse_compilation_error_staff "$compile_err" </dev/zero
         fi
 
-        compile_err="$line\n"
+        compile_err="$line"
     done < "$2"
 
     # Last error/warning will end with "x errors/y warnings; remove this part."

@@ -55,14 +55,12 @@ dodona_start_judgement() {
 ### [ Messages ]
 dodona_append_code_message_staff() {
     # arg1: message contents
-    code=$(echo -e "$1")
-    dodona_append_message 'code' 'staff' "$code"
+    dodona_append_message 'code' 'staff' "$1"
 }
 
 dodona_append_code_message() {
     # arg1: message contents
-    code=$(echo -e "$1")
-    dodona_append_message 'code' 'student' "$code"
+    dodona_append_message 'code' 'student' "$1"
 }
 
 dodona_append_html_message() {
@@ -133,13 +131,12 @@ dodona_close_testcase() {
 
 dodona_start_testcase_markdown_message() {
     # arg1: description
-    description=$(echo "$1")
 
-    jshon -Q -n object                         \
-        -s 'start-testcase' -i 'command'       \
-        -n object                              \
-            -s 'markdown' -i 'format'          \
-            -s 'student' -i 'permission'       \
-            -s "$description" -i 'description' \
+    jshon -Q -n object                   \
+        -s 'start-testcase' -i 'command' \
+        -n object                        \
+            -s 'markdown' -i 'format'    \
+            -s 'student' -i 'permission' \
+            -s "$1" -i 'description'     \
         -i 'description'
 }
