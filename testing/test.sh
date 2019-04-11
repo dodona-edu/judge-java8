@@ -6,7 +6,7 @@ path_to_exercise="$1"
     && echo 'Provide a path to an exercise as first argument.' \
     && exit 1
 
-allow_warnings="$(jshon -e 'evaluation' -e 'allow_compilation_warnings' -u < "$path_to_exercise/config.json")"
+allow_warnings="$(jshon -e 'evaluation' -e 'allow_compilation_warnings' -u < "$path_to_exercise/config.json" || echo 'true')"
 filename="$(jshon -e 'evaluation' -e 'filename' -u < "$path_to_exercise/config.json")"
 
 find "$path_to_exercise/workdir/" -mindepth 1 -maxdepth 1 | xargs cp -r -t .
