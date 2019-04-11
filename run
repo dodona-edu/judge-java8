@@ -43,28 +43,31 @@ compilation_warning_count() {
 }
 
 explain_compilation_error() {
-    if echo "$1" | head -1 | grep -q "should be declared in a file named"; then
-        # Wrong class name.
-        expected_class_name="${filename%.java}"
-        echo "De naam van je klasse hoort \"$expected_class_name\" te zijn."
-    elif echo "$1" | grep -q "cannot find symbol"; then
-        # Cannot find symbol - forgotten import.
-        class_name=$(echo "$1" | grep -o "symbol:\s*class \S\+" | sed "s/.*class \(\S\+\)\\\n/\1/" || true)
-        [ -z "$class_name" ] || echo "Je probeert een onbekende klasse \`$class_name\` te gebruiken. Mogelijks ben je de noodzakelijke \`import\` vergeten."
-    elif echo "$1" | grep -q "assign a value to final variable"; then
-        # Assignment to final variable.
-        variable_name=$(echo "$1" | grep -o "final variable \S\+" | sed "s/final variable //" | sed "s/\\\n//")
-        echo "Variabelen die als \`final\` zijn gedeclareerd, kunnen niet meer worden aangepast eens ze een waarde hebben. Verwijder het \`final\` keyword bij de variabele \"$variable_name\" om dit op te lossen."
-    else
-        # Empty explanation.
-        echo ""
-    fi
+    case "$1" in
+        *"should be declared in a file named"*)
+            # Wrong class name.
+            expected_class_name="${filename%.java}"
+            echo "De naam van je klasse hoort \"$expected_class_name\" te zijn."
+            ;;
+        *"cannot find symbol"*)
+            # Cannot find symbol - forgotten import.
+            class_name=$(echo "$1" | grep -o "symbol:\s*class \S\+" | sed "s/.*class \(\S\+\)\\\n/\1/" || true)
+            [ -z "$class_name" ] || echo "Je probeert een onbekende klasse \`$class_name\` te gebruiken. Mogelijks ben je de noodzakelijke \`import\` vergeten."
+            ;;
+        *"assign a value to final variable"*)
+            # Assignment to final variable.
+            variable_name=$(echo "$1" | grep -o "final variable \S\+" | sed "s/final variable //" | sed "s/\\\n//")
+            echo "Variabelen die als \`final\` zijn gedeclareerd, kunnen niet meer worden aangepast eens ze een waarde hebben. Verwijder het \`final\` keyword bij de variabele \"$variable_name\" om dit op te lossen."
+            ;;
+    esac
 }
 
 explain_compilation_warning() {
-    if echo "$1" | grep -q "found raw type"; then
-        echo "Het is aangeraden een type mee te geven aan generieke klassen."
-    fi
+    case "$1" in
+        *"found raw type"*)
+            echo "Het is aangeraden een type mee te geven aan generieke klassen."
+            ;;
+    esac
 }
 
 parse_compilation_error_staff() {
@@ -131,24 +134,19 @@ parse_compilation_errors() {
 
     # Loop over the compile log and process each message individually.
     compile_err=""
-    while IFS="\n" read -r line; do
-        new_case=$(echo "$line" | egrep -c "^$filename:[0-9]+:" || true)
-
-        if [ -z "$compile_err" ]; then
+    while IFS= read -r line; do
+        if echo "$line" | egrep -q "^$filename:[0-9]+:"; then
+            if [ -n "$compile_err" ]; then
+                if [ "$1" = 'student' ]; then
+                    parse_compilation_error_student "$compile_err" </dev/zero
+                else
+                    parse_compilation_error_staff "$compile_err" </dev/zero
+                fi
+            fi
             compile_err="$line"
-            continue
-        elif [ "$new_case" == "0" ]; then
-            compile_err="$(printf '%s\n%s' "$compile_err" "$line")"
-            continue
-        fi
-
-        if [ "$1" == 'student' ]; then
-            parse_compilation_error_student "$compile_err" </dev/zero
         else
-            parse_compilation_error_staff "$compile_err" </dev/zero
+            compile_err="$(printf '%s\n%s' "$compile_err" "$line")"
         fi
-
-        compile_err="$line"
     done
 
     # Last error/warning will end with "x errors/y warnings; remove this part."
@@ -167,8 +165,8 @@ compilation_error_in_submission() {
     compile_log=$(cat $1)
 
     # Parse the amount of compilation errors and warnings.
-    compile_err_count=$(compilation_error_count <<< "$compile_log")
-    compile_warn_count=$(compilation_warning_count <<< "$compile_log")
+    compile_err_count=$(compilation_error_count < "$1")
+    compile_warn_count=$(compilation_warning_count < "$1")
     compile_errwarn_sum="$((compile_err_count + compile_warn_count))"
 
     # Get the correct noun.
@@ -196,7 +194,7 @@ compilation_error_in_tests() {
     dodona_start_tab "Compiler"
     dodona_append_html_message "<div class=\"callout callout-info\">Er ging iets mis tijdens het compileren van de testen voor deze oefening. Contacteer je lesgever.</div>"
 
-    parse_compilation_errors 'staff' "$1"
+    parse_compilation_errors 'staff' < "$1"
 
     dodona_close_tab
     dodona_close_judgement_compilation_error "in de testen"
