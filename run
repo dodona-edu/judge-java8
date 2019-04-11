@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 debug() { echo -n "$@" " - " >&2; date >&2; }
 debug start
