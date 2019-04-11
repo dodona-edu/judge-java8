@@ -30,7 +30,8 @@ time_limit="$(( time_limit - 10 ))"
 memory_limit="$(jshon -e 'memory_limit' -u < "$config")"
 memory_limit="$(( memory_limit * 9 / 10000 ))"
 
-allow_warnings="$(jshon -e 'allow_warnings' -u < "$config")"
+# Other configuration parameters.
+allow_compilation_warnings="$(jshon -Q -e 'allow_compilation_warnings' -u < "$config" || echo 'true')"
 
 # Record time
 start_time="$(date +"%s")"
@@ -94,7 +95,7 @@ cat "$(jshon -e 'source' -u < "$config")" > "$filename"
 
 # Compiling the user code
 compile_opts="-Xlint:all"
-[ "$allow_warnings" == 'true' ] || compile_opts+=' -Werror'
+[ "$allow_compilation_warnings" == 'true' ] || compile_opts+=' -Werror'
 
 if ! javac -cp .:${worklibs} ${compile_opts} "$filename" > "$compilation" 2>&1; then
     compilation_error "in submitted code" "$compilation" \
