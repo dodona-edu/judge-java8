@@ -4,7 +4,7 @@ path_to_exercise="$1"
 
 [ -z "$path_to_exercise" ] \
     && echo 'Provide a path to an exercise as first argument.' \
-    && exit
+    && exit 1
 
 allow_compilation_warnings="$(jshon -Q -e 'evaluation' -e 'allow_compilation_warnings' -u < "$path_to_exercise/config.json" || echo 'true')"
 filename="$(jshon -e 'evaluation' -e 'filename' -u < "$path_to_exercise/config.json")"
