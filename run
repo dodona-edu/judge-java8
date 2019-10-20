@@ -155,8 +155,9 @@ parse_compilation_errors() {
 compilation_failed() {
     compilation="$1"
     callout="$2"
-    human="$3"
-    target="$4"
+    ifcounts="$3"
+    human="$4"
+    target="$5"
 
     # Counting compilation errors and warning.
     compile_error_count="$(compilation_error_count < "$compilation")"
@@ -181,7 +182,9 @@ compilation_failed() {
         && described_both_count="$described_error_count en $described_warning_count" \
         || described_both_count="$described_error_count$described_warning_count"
 
-    dodona append-message -f callout -d "$(printf "$callout" "$described_both_count")"
+    [ -n "$described_both_count" ] \
+        && callout="$(printf "%s $ifcounts" "$callout" "$described_both_count")"
+    dodona append-message -f callout -d "$callout"
 
     if grep -q '^package' "$filename"; then
         dodona append-message -f callout -d 'Ben je zeker dat je de ingediende klasse in het default package plaatste?'
@@ -191,7 +194,7 @@ compilation_failed() {
     sed 's_.*/\([^/]*.java\)_\1_' "$compilation" | parse_compilation_errors "$target"
 
     dodona close-tab # -b "$compile_errwarn_sum" TODO https://github.ugent.be/dodona/dodona/pull/1051
-    dodona close-judgement -A -e 'compilation error' -h "$(printf "$human" "$described_error_count")"
+    dodona close-judgement -A -e 'compilation error' -h "$(printf "$human" "${described_error_count:-Compilatiefout}")"
     exit 0
 }
 
@@ -216,6 +219,7 @@ compilation_error() {
 if ! find . -name '*.java' | xargs --no-run-if-empty javac -cp ".:${worklibs}:${testlibs}" -d . -sourcepath . > "$compilation" 2>&1; then
     compilation_failed "$compilation" \
         'Er ging iets mis tijdens het compileren van de startcode voor deze oefening. Contacteer je lesgever.' \
+        '' \
         'Fout in de startcode' \
         'staff'
 fi
@@ -228,7 +232,8 @@ compile_opts="-Xlint:all"
 [ "$allow_compilation_warnings" == 'true' ] || compile_opts+=' -Werror'
 if ! javac -cp ".:${worklibs}" ${compile_opts} "$filename" > "$compilation" 2>&1; then
     compilation_failed "$compilation" \
-        "Je code kon niet worden gecompileerd en bijgevolg niet worden getest. De compiler rapporteerde %s." \
+        'Je code kon niet worden gecompileerd en bijgevolg niet worden getest.' \
+        'De compiler rapporteerde %s.' \
         "%s" \
         'student'
 fi
@@ -245,7 +250,8 @@ fi
 # Compiling the tests
 if ! find "$resources" -name '*.java' | xargs javac -cp ".:${resources}:${worklibs}:${testlibs}:judge.jar" -d . -sourcepath "$resources" > "$compilation" 2>&1; then
     compilation_failed "$compilation" \
-        'Er ging iets mis tijdens het compileren van de testen voor deze oefening. Contacteer je lesgever.' \
+        'Er ging iets mis tijdens het compileren van de testen voor deze oefening.' \
+        '' \
         'Fout in de testen' \
         'staff'
 fi
