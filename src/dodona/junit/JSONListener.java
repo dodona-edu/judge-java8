@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class JSONListener extends RunListener {
+    private static final int STACKSIZE = 50;
 
     private final PrintStream writer;
     private final Json json;
@@ -87,13 +88,14 @@ public class JSONListener extends RunListener {
                     message.append("Caused by " + thrown);
                     StackTraceElement[] stacktrace = thrown.getStackTrace();
                     boolean leftDefaultPackage = false;
-                    for(int i = 0; i < stacktrace.length; i++) {
+                    for(int i = 0; i < stacktrace.length && i < STACKSIZE; i++) {
                         // student code in default package
                         boolean inDefaultPackage = stacktrace[i].getClassName().indexOf('.') < 0;
                         if(leftDefaultPackage && !inDefaultPackage) break;
                         if(inDefaultPackage) leftDefaultPackage = true;
                         message.append("\n at " + stacktrace[i].toString());
                     }
+                    if(stacktrace.length >= STACKSIZE) message.append("\n ...");
                     write(new AppendMessage(Message.code(message.toString())));
                     thrown = thrown.getCause();
                 }
