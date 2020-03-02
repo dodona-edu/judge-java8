@@ -102,10 +102,12 @@ parse_compilation_error_student() {
     dodona append-message -f code -d "$1"
 
     # Get the code annotation information.
-    annotation_column="$(echo "$1" | grep -o "\s*\^" | wc -c)"
+    annotation_column="$(echo "$1" | sed -n '/^  *^/p' | wc -c)"
     annotation_column="$((annotation_column - 2))"
+    [ "$annotation_column" -lt 0 ] && annotation_column=0
     annotation_row="$(echo "$1" | sed -n "s/^$filename:\([0-9]\+\):.*/\1/p")"
     annotation_row="$((annotation_row - 1))"
+    [ "$annotation_row" -lt 0 ] && annotation_row=0
 
     if [ -z "$explanation" ]; then
         # Use the first line of the compilation log.
